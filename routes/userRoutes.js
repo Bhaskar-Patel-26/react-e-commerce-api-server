@@ -42,7 +42,8 @@ router.post("/login", async (req, res) => {
     });
 
     res.status(200).send({
-      message: "User login successfully!", token,
+      message: "User login successfully!",
+      token,
       user: {
         _id: user._id,
         email: user.email,
@@ -55,6 +56,85 @@ router.post("/login", async (req, res) => {
     });
   } catch (error) {
     res.status(500).send({ message: error.message });
+    console.log(error);
+  }
+});
+
+router.post("/logout", (req, res) => {
+  res.clearCookie("token");
+  res.status(200).send({ message: "Logged out successfully" });
+});
+
+router.delete("/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByIdAndDelete(id);
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+    res.status(200).send({ message: "User deleted successfully" });
+  } catch (error) {
+    res.status(500).send({ message: "Error deleting user" });
+    console.log(error);
+  }
+});
+
+router.get("/users", async (req, res) => {
+  try {
+    const users = await User.find({}, "id email role").sort({ createdAt: -1 });
+    res.status(200).send({ users });
+  } catch (error) {
+    res.status(500).send({ message: "Error deleting user" });
+    console.log(error);
+  }
+});
+
+router.put("/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+    const user = await User.findByIdAndUpdate(id, { role }, { new: true });
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+    res.status(200).send({ message: "User role updated successfully" });
+  } catch (error) {
+    res.status(500).send({ message: "Error updating user role" });
+    console.log(error);
+  }
+});
+
+router.patch("/edit-profile", async (req, res) => {
+  try {
+    const { userId, username, profileImage, bio, profession } = req.body;
+    if (!userId) {
+      return res.status(400).send({ message: "User Id is required" });
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    if (username !== undefined) user.username = username;
+    if (profileImage !== undefined) user.profileImage = profileImage;
+    if (bio !== undefined) user.bio = bio;
+    if (profession !== undefined) user.profession = profession;
+
+    await user.save();
+    res.status(200).send({
+      message: "Profile updated successfully",
+      user: {
+        _id: user._id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        profileImage: user.profileImage,
+        bio: user.bio,
+        profession: user.profession,
+      },
+    });
+  } catch (error) {
+    res.status(500).send({ message: "Error updating user profile" });
     console.log(error);
   }
 });

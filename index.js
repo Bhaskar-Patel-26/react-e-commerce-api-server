@@ -16,7 +16,7 @@ app.get("/", (req, res) => {
   res.send("Test Page");
 });
 
-app.use("/users", userRouters);
+app.use("/auth", userRouters);
 
 app.listen(3000, () => {
   console.log(`Server is running on ${port}`);
