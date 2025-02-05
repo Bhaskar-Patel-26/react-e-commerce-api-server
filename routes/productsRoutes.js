@@ -1,6 +1,7 @@
 import express from "express";
 import { Products } from "../models/productsModel.js";
 import { Reviews } from "../models/reviewsModel.js";
+import verifyToken from "../middleware/verifyToken.js";
 
 const router = express.Router();
 
@@ -75,7 +76,7 @@ router.get("/:id", async(req, res)=>{
 })
 
 // Update product
-router.patch("/update-product/:id", async (req,res)=> {
+router.patch("/update-product/:id", verifyToken, async (req,res)=> {
     try {
         const productId = req.params.id;
         const updatedProduct = await Products.findByIdAndUpdate(productId, {...req.body}, {new: true});
