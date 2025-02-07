@@ -3,6 +3,7 @@ import connectDB from "./utils/connectDB.js";
 import { configDotenv } from "dotenv";
 import userRouters from "./routes/userRoutes.js";
 import productRouters from "./routes/productsRoutes.js";
+import reviewRouters from "./routes/reviewsRoutes.js";
 import cors from "cors";
 
 const app = express();
@@ -26,6 +27,7 @@ app.get("/", (req, res) => {
 
 app.use("/auth", userRouters);
 app.use("/products", productRouters);
+app.use("/reviews", reviewRouters);
 
 app.listen(3000, () => {
   console.log(`Server is running on ${port}`);

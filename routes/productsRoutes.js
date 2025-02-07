@@ -1,5 +1,5 @@
 import express from "express";
-import { Products } from "../models/productsModel.js";
+import { Product } from "../models/productsModel.js";
 import { Reviews } from "../models/reviewsModel.js";
 import verifyToken from "../middleware/verifyToken.js";
 
@@ -8,7 +8,7 @@ const router = express.Router();
 // Create new product
 router.post("/create-product", async (req, res) => {
   try {
-    const newProduct = new Products({
+    const newProduct = new Product({
       ...req.body,
     });
     const savedProduct = await newProduct.save();
@@ -49,10 +49,10 @@ router.get("/", async (req, res) => {
     }
     console.log(filter)
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    const totalProducts = await Products.countDocuments(filter);
-    const totalPages = Math.ceil(totalProducts/parseInt(limit));
-    const products = await Products.find(filter).skip(skip).limit(parseInt(limit)).populate("author", "email").sort({createdAt: -1});
-    res.status(200).send({products, totalPages, totalProducts})
+    const totalProduct = await Product.countDocuments(filter);
+    const totalPages = Math.ceil(totalProduct/parseInt(limit));
+    const products = await Product.find(filter).skip(skip).limit(parseInt(limit)).populate("author", "email").sort({createdAt: -1});
+    res.status(200).send({products, totalPages, totalProduct})
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Failed to get products" });
@@ -63,7 +63,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async(req, res)=>{
     try {
         const productId = req.params.id;
-        const product = await Products.findById(productId).populate("author", "email username");
+        const product = await Product.findById(productId).populate("author", "email username");
         if(!product){
             return res.status(404).send({message: "Product not found"});
         }
@@ -79,7 +79,7 @@ router.get("/:id", async(req, res)=>{
 router.patch("/update-product/:id", verifyToken, async (req,res)=> {
     try {
         const productId = req.params.id;
-        const updatedProduct = await Products.findByIdAndUpdate(productId, {...req.body}, {new: true});
+        const updatedProduct = await Product.findByIdAndUpdate(productId, {...req.body}, {new: true});
         if(!updatedProduct){
             return res.status(404).send({message: "Product not found"});
         }
@@ -94,7 +94,7 @@ router.patch("/update-product/:id", verifyToken, async (req,res)=> {
 router.delete("/:id", async (req,res)=> {
     try {
         const productId = req.params.id;
-        const deletedProduct = await Products.findByIdAndDelete(productId);
+        const deletedProduct = await Product.findByIdAndDelete(productId);
         if(!deletedProduct){
             return res.status(404).send({message: "Product not found"});
         }
@@ -114,7 +114,7 @@ router.get("/related/:id", async (req,res)=> {
             return res.status(400).send({message: "Product ID is required"});
         }
 
-        const product = await Products.findById(id);
+        const product = await Product.findById(id);
         if(!product){
             return res.status(404).send({message: "Product not found"});
         }
@@ -123,14 +123,14 @@ router.get("/related/:id", async (req,res)=> {
             product.name.split(" ").filter((word)=>word.length > 1).join(" "), "i"
         )
 
-        const relatedProducts = await Products.find({
+        const relatedProduct = await Product.find({
             _id: {$ne: id},
             $or: [
                 {name: {$regex: titleRegex}},
                 {category: product.category},
             ],
         });
-        res.status(200).send(relatedProducts);
+        res.status(200).send(relatedProduct);
     } catch (error) {
         console.log(error);
         res.status(500).send({ message: "Failed to delete product" });
